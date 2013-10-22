@@ -78,7 +78,7 @@
       });
 
       socket.on('new message', function(data) {
-        $chat.append(data + '<br>');
+        $chat.append('<strong>'+ data.nick +'</strong>: ' + data.msg + '<br>');
       });
     });
   </script>
