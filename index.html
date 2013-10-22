@@ -43,7 +43,8 @@
           $nickForm = $('#set-nick'),
 	  $nickError = $('#nick-err'),
 	  $nickBox = $('#nickname'),
-          $msgForm = $('#send-msg'),
+          $users = $('#users'),
+	  $msgForm = $('#send-msg'),
 	  $msgBox = $('#msg'),
 	  $chat = $('#chat');
       
@@ -58,7 +59,15 @@
 	      $nickError.html('That username is already taken, try again!');
 	   }
 	 });
-         $nickBox.val();
+         $nickBox.val('');
+      });
+
+      socket.on('usernames', function(data) {
+         var html = '';
+	 for(var key in data) {
+	   html += data[key] +'<br >';
+	 }
+         $users.html(html);
       });
 
       $msgForm.submit(function(e) {
