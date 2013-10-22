@@ -15,10 +15,10 @@
   </style>
 </head>
 <body>
-  <div id="nickWrap">
+  <div id="nick-wrap">
     <p>Enter a username:</p>
-    <p id="nickError"></p>
-    <form id="setNick">
+    <p id="nick-err"></p>
+    <form id="set-nick">
       <input size="35" id="nickname">
       <input type="submit">
     </form>
@@ -40,9 +40,26 @@
   <script>
     $(function() {
       var socket = io.connect(),
+          $nickForm = $('#set-nick'),
+	  $nickError = $('#nick-err'),
+	  $nickBox = $('#nickname'),
           $msgForm = $('#send-msg'),
 	  $msgBox = $('#msg'),
 	  $chat = $('#chat');
+      
+      $nickForm.submit(function(e) {
+         e.preventDefault();
+         
+	 socket.emit('new user', $nickBox.val(), function(data) {
+	   if (data) {
+	      $('#nick-wrap').hide();
+	      $('#content-wrap').show();
+	   } else {
+	      $nickError.html('That username is already taken, try again!');
+	   }
+	 });
+         $nickBox.val();
+      });
 
       $msgForm.submit(function(e) {
         e.preventDefault();
