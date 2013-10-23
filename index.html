@@ -4,6 +4,7 @@
   <style>
     #chat {
       height: 500px;
+      overflow-y: scroll;
     }
     #content-wrap {
       display: none;
@@ -47,7 +48,30 @@
 	  $msgForm = $('#send-msg'),
 	  $msgBox = $('#msg'),
 	  $chat = $('#chat');
-      
+
+    var tagBody = '(?:[^"\'>]|"[^"]*"|\'[^\']*\')*';
+
+    var tagOrComment = new RegExp(
+        '<(?:'
+        // Comment body.
+        + '!--(?:(?:-*[^->])*--+|-?)'
+        // Special "raw text" elements whose content should be elided.
+        + '|script\\b' + tagBody + '>[\\s\\S]*?</script\\s*'
+        + '|style\\b' + tagBody + '>[\\s\\S]*?</style\\s*'
+        // Regular name
+        + '|/?[a-z]'
+        + tagBody
+        + ')>',
+        'gi');
+    function removeTags(html) {
+      var oldHtml;
+      do {
+        oldHtml = html;
+        html = html.replace(tagOrComment, '');
+      } while (html !== oldHtml);
+      return html.replace(/</g, '&lt;');
+    }
+
       $nickForm.submit(function(e) {
          e.preventDefault();
          
@@ -65,7 +89,7 @@
       socket.on('usernames', function(data) {
          var html = '';
 	 for(var key in data) {
-	   html += data[key] +'<br >';
+	   html += removeTags(data[key]) +'<br >';
 	 }
          $users.html(html);
       });
@@ -78,7 +102,8 @@
       });
 
       socket.on('new message', function(data) {
-        $chat.append('<strong>'+ data.nick +'</strong>: ' + data.msg + '<br>');
+        $chat.append(removeTags('<strong>'+ data.nick +'</strong>: ' + data.msg));
+        $chat.append('<br>');
       });
     });
   </script>
