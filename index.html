@@ -105,15 +105,21 @@
         $msgForm.submit(function(e) {
             e.preventDefault();
 
-            socket.emit('send message', $msgBox.val());
-                $msgBox.val('');
+            socket.emit('send message', $msgBox.val(), function(data) {
+                $chat.append('<strong style="color: red;">Error</strong>');
             });
-
-            socket.on('new message', function(data) {
-                $chat.append('<strong>'+ data.nick +'</strong>: ' + data.msg);
-                $chat.append('<br>');
-            });
+            $msgBox.val('');
         });
+
+        socket.on('new message', function(data) {
+            $chat.append('<strong>'+ data.nick +'</strong>: ' + data.msg);
+            $chat.append('<br>');
+        });
+
+        socket.on('whisper', function(data) {
+            $chat.append('<strong style="font-style: italic;">'+ data.nick +'</strong>: ' + data.msg);
+        });
+    });
   </script>
 </body>
 </html>
