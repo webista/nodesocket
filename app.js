@@ -2,9 +2,24 @@ var express = require('express'),
     app = express(),
     server = require('http').createServer(app),
     io = require('socket.io').listen(server),
+    mongoose = require('mongoose'),
     users = {};
 
 server.listen(3000);
+
+mongoose.connect('mongodb://localhost/nodechatsocket', function(err) {
+    if (err) {
+        console.log(err);
+    } else {
+        console.log('Success');
+    }
+});
+
+// var chatSchema = mongoose.Schema({
+//     nick: String,
+//     msg: String,
+//     created: {type: Date, default: Date.now}
+// });
 
 app.get('/', function(req, res) {
     res.sendfile(__dirname + '/index.html');
