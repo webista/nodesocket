@@ -40,72 +40,80 @@
   <script src="/socket.io/socket.io.js"></script>
   <script>
     $(function() {
-      var socket = io.connect(),
-          $nickForm = $('#set-nick'),
-	  $nickError = $('#nick-err'),
-	  $nickBox = $('#nickname'),
-          $users = $('#users'),
-	  $msgForm = $('#send-msg'),
-	  $msgBox = $('#msg'),
-	  $chat = $('#chat');
+        var socket = io.connect(),
+            $nickForm = $('#set-nick'),
+            $nickError = $('#nick-err'),
+            $nickBox = $('#nickname'),
+            $users = $('#users'),
+            $msgForm = $('#send-msg'),
+            $msgBox = $('#msg'),
+            $chat = $('#chat'),
 
-    var tagBody = '(?:[^"\'>]|"[^"]*"|\'[^\']*\')*';
+            tagBody = '(?:[^"\'>]|"[^"]*"|\'[^\']*\')*',
+            tagOrComment = new RegExp(
+            '<(?:'
+            // Comment body.
+            + '!--(?:(?:-*[^->])*--+|-?)'
+            // Special "raw text" elements whose content should be elided.
+            + '|script\\b' + tagBody + '>[\\s\\S]*?</script\\s*'
+            + '|style\\b' + tagBody + '>[\\s\\S]*?</style\\s*'
+            // Regular name
+            + '|/?[a-z]'
+            + tagBody
+            + ')>',
+            'gi');
 
-    var tagOrComment = new RegExp(
-        '<(?:'
-        // Comment body.
-        + '!--(?:(?:-*[^->])*--+|-?)'
-        // Special "raw text" elements whose content should be elided.
-        + '|script\\b' + tagBody + '>[\\s\\S]*?</script\\s*'
-        + '|style\\b' + tagBody + '>[\\s\\S]*?</style\\s*'
-        // Regular name
-        + '|/?[a-z]'
-        + tagBody
-        + ')>',
-        'gi');
-    function removeTags(html) {
-      var oldHtml;
-      do {
-        oldHtml = html;
-        html = html.replace(tagOrComment, '');
-      } while (html !== oldHtml);
-      return html.replace(/</g, '&lt;');
-    }
+        function removeTags(html) {
+            var oldHtml;
+            do {
+                oldHtml = html;
+                html = html.replace(tagOrComment, '');
+            } while (html !== oldHtml) {
+                return html.replace(/</g, '&lt;');
+            }
+        }
 
-      $nickForm.submit(function(e) {
-         e.preventDefault();
+        $nickForm.submit(function(e) {
+            e.preventDefault();
          
-	 socket.emit('new user', $nickBox.val(), function(data) {
-	   if (data) {
-	      $('#nick-wrap').hide();
-	      $('#content-wrap').show();
-	   } else {
-	      $nickError.html('That username is already taken, try again!');
-	   }
-	 });
-         $nickBox.val('');
-      });
+            socket.emit('new user', $nickBox.val(), function(data) {
+                if (data) {
+                    $('#nick-wrap').hide();
+                    $('#content-wrap').show();
+                } else {
+                    $nickError.html('That username is already taken, try again!');
+                }
+            });
 
-      socket.on('usernames', function(data) {
-         var html = '';
-	 for(var key in data) {
-	   html += removeTags(data[key]) +'<br >';
-	 }
-         $users.html(html);
-      });
+            $nickBox.val('');
+            var wtf    = $('#chat'),
+                height = wtf[0].scrollHeight;
+            
+            wtf.scrollTop(height);
+        });
 
-      $msgForm.submit(function(e) {
-        e.preventDefault();
+        socket.on('usernames', function(data) {
+            var html = '';
+	 
+            for(var key in data) {
+                html += data[key] +'<br >';
+            }
 
-	socket.emit('send message', $msgBox.val());
-	$msgBox.val('');
-      });
+            $users.html(html);
+        });
 
-      socket.on('new message', function(data) {
-        $chat.append(removeTags('<strong>'+ data.nick +'</strong>: ' + data.msg));
-        $chat.append('<br>');
-      });
-    });
+        $msgForm.submit(function(e) {
+            e.preventDefault();
+
+            socket.emit('send message', $msgBox.val());
+                $msgBox.val('');
+            });
+
+            socket.on('new message', function(data) {
+                $chat.append('<strong>'+ data.nick +'</strong>: ' + data.msg);
+                $chat.append('<br>');
+            });
+        });
   </script>
 </body>
 </html>
