@@ -31,7 +31,6 @@ io.sockets.on('connection', function(socket) {
         if (err) {
             throw err;
         } else {
-            console.log('sending old msgs');
             socket.emit('load old msgs', docs);
         }
     });

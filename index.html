@@ -16,6 +16,7 @@
   </style>
 </head>
 <body>
+    <h1>Update: Nakasave na sa db to so may history na hehe</h1>
   <div id="nick-wrap">
     <p>Enter a username:</p>
     <p id="nick-err"></p>
@@ -110,6 +111,16 @@
             });
             $msgBox.val('');
         });
+
+        socket.on('load old msgs', function(docs) {
+            for(var key in docs) {
+                displayMsg(docs[key]);
+            }
+        });
+
+        function displayMsg(data) {
+            $chat.append('<strong style="font-style: italic;">'+ data.nick +'</strong>: ' + data.msg + '<br>');
+        }
 
         socket.on('new message', function(data) {
             $chat.append('<strong>'+ data.nick +'</strong>: ' + data.msg);
